@@ -1,0 +1,74 @@
+
+
+.App {
+  text-align: center;
+}
+
+input[type="text"] {
+  width: 215px;
+  padding: 12px;
+  margin: 30px 0;
+  border: 1px solid #a6cef6;
+  background-color: #dbeaf3;
+  color: black;
+}
+
+button {
+  width: 80px;
+  font-size: 16px;
+  padding: 10px 8px 10px 8px;
+  margin: 0 0 0 6px;
+  border: 1px solid #a6cef6;
+  background-color:rgb(137, 214, 247);
+}
+
+.task-row {
+  display: flex;
+  justify-content: space-around;
+  justify-items: center;
+
+}
+
+h3.task-list-header {
+  font-size: 20px;
+
+}
+
+.task-list-header {
+  text-align: left;
+  border: 1px solid #a6cef6;
+  padding: 5px;
+  width: 330px;
+  font-size: 15px;
+  margin: 20px 0 0 0;
+  background-color:rgb(137, 214, 247);
+}
+
+img {
+  height: 20px;
+  padding: 16px 16px 0 0;
+}
+
+.task-list-item {
+  font-size: 18px;
+  text-align: center;
+  justify-content: space-between;
+  display: flex;
+  border: 1px solid #a6cef6;
+  background-color:#dbeaf3;
+}
+
+p.task-name {
+  width: 140px;
+  text-align: start;
+  justify-content: space-between;
+
+}
+
+.Add-task {
+  display: flex;
+}
+
+h1 {
+  margin: 40px 0 10px 0;
+}
