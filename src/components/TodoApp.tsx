@@ -8,10 +8,13 @@ type Task = {
   text: string;
   completed: boolean;
   user_id: string;
+  created_at: string;
 };
 
+
+
 export default function TodoApp() {
-  const { user,  } = useAuth();
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
 
@@ -75,17 +78,17 @@ export default function TodoApp() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-6">
       <div className="flex justify-between items-center w-full max-w-4xl mb-6">
         <h1 className="text-3xl font-bold">Welcome to your To-do-List</h1>
-       <button
-  className="underline text-blue-600"
-  onClick={async () => {
-    await supabase.auth.signOut();
-    // Optionally: you can force a reload or set user to null
-    // location.reload();  <-- quick hack to refresh UI
-  }}
->
-  Logout
-</button>
+  
 
+        <button
+          className="underline text-blue-600"
+          onClick={async () => {
+            await supabase.auth.signOut();
+            location.reload(); // Optional force UI reset
+          }}
+        >
+          Logout
+        </button>
       </div>
 
       <div className="flex w-full max-w-xl mb-6">

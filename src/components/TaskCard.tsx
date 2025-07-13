@@ -1,11 +1,13 @@
 import { useState } from 'react';
-// Define Task type here if not available elsewhere
+import { FaTrash, FaCheck, FaUndo, FaPen } from 'react-icons/fa';
+
+// ✅ Add created_at to Task type
 export type Task = {
   id: number;
   text: string;
   completed: boolean;
+  created_at: string;
 };
-import { FaTrash, FaCheck, FaUndo, FaPen } from 'react-icons/fa';
 
 type Props = {
   task: Task;
@@ -14,6 +16,17 @@ type Props = {
   onEdit: (text: string) => void;
   isCompleted?: boolean;
 };
+
+// ✅ Time formatter
+function formatTimeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
 const TaskCard = ({ task, onComplete, onDelete, onEdit, isCompleted = false }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -34,20 +47,24 @@ const TaskCard = ({ task, onComplete, onDelete, onEdit, isCompleted = false }: P
           checked={task.completed}
           onChange={onComplete}
         />
-        {isEditing ? (
-          <input
-            value={editText}
-            onChange={e => setEditText(e.target.value)}
-            onBlur={handleEdit}
-            onKeyDown={e => e.key === 'Enter' && handleEdit()}
-            className="bg-white border px-2 py-1 rounded w-full"
-            autoFocus
-          />
-        ) : (
-          <span className="flex items-center justify-between w-full">
+        <div className="flex flex-col w-full">
+          {isEditing ? (
+            <input
+              value={editText}
+              onChange={e => setEditText(e.target.value)}
+              onBlur={handleEdit}
+              onKeyDown={e => e.key === 'Enter' && handleEdit()}
+              className="bg-white border px-2 py-1 rounded"
+              autoFocus
+            />
+          ) : (
             <span className="cursor-pointer">{task.text}</span>
+          )}
+          {/* ✅ Show time ago */}
+          <span className="text-xs text-gray-500 mt-1">
+            Created: {formatTimeAgo(task.created_at)}
           </span>
-        )}
+        </div>
       </div>
 
       <div className="flex items-center gap-3 ml-4">
