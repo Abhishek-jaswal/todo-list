@@ -11,7 +11,7 @@ type Task = {
 };
 
 export default function TodoApp() {
-  const { user, signOut } = useAuth();
+  const { user,  } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
 
