@@ -20,6 +20,7 @@ export default function TodoApp() {
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
   const [dueDate, setDueDate] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  
 
   useEffect(() => {
     const fetchTasks = async () => {
