@@ -1,69 +1,103 @@
-# React + TypeScript + Vite
+# 📝 Supabase To-Do App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern full-stack To-Do List built with **React**, **TypeScript**, and **Supabase**. It includes priority tagging, due date reminders, dark mode, advanced filters, and mobile-friendly UX.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- ✅ User authentication with Supabase Auth
+- 🏷️ Task priority (High / Medium / Low)
+- 🗓️ Due date support
+- 🌑 Dark mode toggle (with persistence)
+- 📊 Filters:
+  - Filter by Priority
+  - Filter due today
+- 🧮 Sorting:
+  - Sort by `created_at` or `due_date`
+  - Ascending or Descending
+- 📱 Mobile responsive UI
+- 🧹 Task management:
+  - Mark as complete/incomplete
+  - Edit text, due date, priority
+  - Delete task (with confirmation)
+- 🔔 Ready for Due Date Notifications (via Supabase Edge Functions)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📦 Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+| Tech        | Purpose                |
+|-------------|------------------------|
+| React + TS  | Frontend UI & logic    |
+| Supabase    | Auth, Database, Edge   |
+| TailwindCSS | Styling                |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 📂 Project Structure
+
+src/
+├── components/
+│ ├── TodoApp.tsx // Main app logic
+│ └── TaskCard.tsx // Task UI card
+├── context/
+│ └── AuthContext.tsx // Auth provider
+├── supabase.ts // Supabase client setup
+
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/todo-app.git
+cd todo-app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm install
+1. Configure Supabase
+Create a .env.local file with:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+Make sure your Supabase project includes a tasks table:
+
+create table tasks (
+  id bigint generated always as identity primary key,
+  text text,
+  completed boolean default false,
+  user_id uuid,
+  created_at timestamp default now(),
+  priority text,
+  due_date date,
+  reminder_sent boolean default false
+);
 ```
+
+## Run the app
+
+```bash
+npm run dev
+```
+
+## 📸 Screenshots
+
+## Light Mode Dark Mode
+
+## 📱 Mobile UI
+
+- Fully responsive layout
+
+- Optimized spacing and stacking on small screens
+
+## 👨‍💻 Author
+
+## Abhishek Jaswal
+
+- 📧 <abhishekjaswal1122@gmail.com>
+- 🔗 Portfolio
