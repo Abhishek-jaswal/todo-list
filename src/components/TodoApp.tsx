@@ -26,6 +26,8 @@ export default function TodoApp() {
   const [filterDueToday, setFilterDueToday] = useState(false);
   const [sortBy, setSortBy] = useState<'created_at' | 'due_date'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -42,6 +44,16 @@ export default function TodoApp() {
 
     fetchTasks();
   }, [user]);
+
+const confirmDeleteTask = async () => {
+  if (!taskToDelete) return;
+  const { error } = await supabase.from('tasks').delete().eq('id', taskToDelete.id);
+  if (error) console.error('Delete task error:', error.message);
+  else setTasks(prev => prev.filter(t => t.id !== taskToDelete.id));
+  setTaskToDelete(null);
+};
+
+
 
   const addTask = async () => {
     if (!newTask.trim() || !user) return;
@@ -75,11 +87,7 @@ export default function TodoApp() {
     else setTasks(prev => prev.map(t => (t.id === id ? data : t)));
   };
 
-  const deleteTask = async (id: number) => {
-    const { error } = await supabase.from('tasks').delete().eq('id', id);
-    if (error) console.error('Delete task error:', error.message);
-    else setTasks(prev => prev.filter(t => t.id !== id));
-  };
+ 
 
   const isDueToday = (dueDate?: string) => {
     if (!dueDate) return false;
@@ -199,7 +207,7 @@ export default function TodoApp() {
               key={task.id}
               task={task}
               onComplete={() => updateTask(task.id, { completed: true })}
-              onDelete={() => deleteTask(task.id)}
+              onDelete={() => setTaskToDelete(task)}
               onEdit={(text) => updateTask(task.id, { text })}
               onPriorityChange={(priority) => updateTask(task.id, { priority })}
               onDueDateChange={(date) => updateTask(task.id, { due_date: date })}
@@ -216,7 +224,7 @@ export default function TodoApp() {
               task={task}
               isCompleted
               onComplete={() => updateTask(task.id, { completed: false })}
-              onDelete={() => deleteTask(task.id)}
+              onDelete={() => setTaskToDelete(task)}
               onEdit={(text) => updateTask(task.id, { text })}
               onPriorityChange={(priority) => updateTask(task.id, { priority })}
               onDueDateChange={(date) => updateTask(task.id, { due_date: date })}
@@ -224,6 +232,31 @@ export default function TodoApp() {
           ))}
         </div>
       </div>
+      {taskToDelete && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-[90%] max-w-md text-center">
+      <h2 className="text-lg font-semibold mb-4">Delete Task?</h2>
+      <p className="mb-6 text-sm text-gray-600 dark:text-gray-300">
+        Are you sure you want to delete the task <strong>"{taskToDelete.text}"</strong>?
+      </p>
+      <div className="flex justify-center gap-4">
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={confirmDeleteTask}
+        >
+          Delete
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded hover:bg-gray-400 dark:hover:bg-gray-600"
+          onClick={() => setTaskToDelete(null)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
