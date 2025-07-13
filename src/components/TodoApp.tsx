@@ -21,6 +21,12 @@ export default function TodoApp() {
   const [dueDate, setDueDate] = useState('');
   const [darkMode, setDarkMode] = useState(false);
 
+  // Filter & Sort
+  const [filterPriority, setFilterPriority] = useState<string>('All');
+  const [filterDueToday, setFilterDueToday] = useState(false);
+  const [sortBy, setSortBy] = useState<'created_at' | 'due_date'>('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
   useEffect(() => {
     const fetchTasks = async () => {
       if (!user) return;
@@ -28,8 +34,7 @@ export default function TodoApp() {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .eq('user_id', user.id)
-        .order('id', { ascending: true });
+        .eq('user_id', user.id);
 
       if (error) console.error('Fetch error:', error.message);
       else setTasks(data || []);
@@ -76,27 +81,39 @@ export default function TodoApp() {
     else setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  const pendingTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
+  const isDueToday = (dueDate?: string) => {
+    if (!dueDate) return false;
+    const today = new Date().toISOString().split('T')[0];
+    return dueDate === today;
+  };
+
+  const sortTasks = (list: Task[]) => {
+    return [...list].sort((a, b) => {
+      const aVal = a[sortBy] || '';
+      const bVal = b[sortBy] || '';
+      return sortOrder === 'asc'
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    });
+  };
+
+  const filterAndSort = (completed: boolean) => {
+    return sortTasks(
+      tasks.filter(t => t.completed === completed)
+        .filter(t => (filterPriority === 'All' || t.priority === filterPriority))
+        .filter(t => (!filterDueToday || isDueToday(t.due_date)))
+    );
+  };
 
   return (
     <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} min-h-screen flex flex-col items-center justify-center px-4 py-6`}>
       <div className="flex justify-between items-center w-full max-w-4xl mb-6">
         <h1 className="text-3xl font-bold">Welcome to your To-do-List</h1>
         <div className="flex gap-4">
-          <button
-            className="underline text-blue-600"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              location.reload();
-            }}
-          >
+          <button className="underline text-blue-600" onClick={async () => { await supabase.auth.signOut(); location.reload(); }}>
             Logout
           </button>
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="text-sm border px-2 py-1 rounded"
-          >
+          <button onClick={() => setDarkMode(!darkMode)} className="text-sm border px-2 py-1 rounded">
             {darkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
           </button>
         </div>
@@ -113,12 +130,12 @@ export default function TodoApp() {
         />
         <select
           value={priority}
-onChange={(e) => {
-  const value = e.target.value;
-  if (value === 'Low' || value === 'Medium' || value === 'High') {
-    setPriority(value);
-  }
-}}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === 'Low' || value === 'Medium' || value === 'High') {
+              setPriority(value);
+            }
+          }}
           className="border px-2 py-2 rounded"
         >
           <option value="Low">Low</option>
@@ -139,11 +156,45 @@ onChange={(e) => {
         </button>
       </div>
 
+      <div className="w-full max-w-4xl flex flex-wrap gap-4 mb-6">
+        <select
+          value={filterPriority}
+          onChange={e => setFilterPriority(e.target.value)}
+          className="border px-2 py-1 rounded"
+        >
+          <option value="All">All Priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={filterDueToday} onChange={e => setFilterDueToday(e.target.checked)} />
+          Due Today
+        </label>
+
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as 'created_at' | 'due_date')}
+          className="border px-2 py-1 rounded"
+        >
+          <option value="created_at">Sort by Created</option>
+          <option value="due_date">Sort by Due Date</option>
+        </select>
+
+        <button
+          onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
+          className="border px-2 py-1 rounded"
+        >
+          {sortOrder === 'asc' ? '⬆️ Asc' : '⬇️ Desc'}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
         <div className="bg-blue-200 p-4 rounded shadow">
           <h2 className="font-bold text-lg mb-2">Task List</h2>
-          {pendingTasks.length === 0 && <p className="text-gray-600">No pending tasks</p>}
-          {pendingTasks.map(task => (
+          {filterAndSort(false).length === 0 && <p className="text-gray-600">No pending tasks</p>}
+          {filterAndSort(false).map(task => (
             <TaskCard
               key={task.id}
               task={task}
@@ -158,8 +209,8 @@ onChange={(e) => {
 
         <div className="bg-blue-200 p-4 rounded shadow">
           <h2 className="font-bold text-lg mb-2">Completed Task</h2>
-          {completedTasks.length === 0 && <p className="text-gray-600">No completed tasks</p>}
-          {completedTasks.map(task => (
+          {filterAndSort(true).length === 0 && <p className="text-gray-600">No completed tasks</p>}
+          {filterAndSort(true).map(task => (
             <TaskCard
               key={task.id}
               task={task}
