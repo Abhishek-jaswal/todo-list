@@ -3,17 +3,23 @@ import TaskCard from './TaskCard';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 
-type Task = {
+export type Task = {
   id: number;
   text: string;
   completed: boolean;
-  user_id: string;
+  user_id?: string;
+  created_at?: string;
+  priority?: 'Low' | 'Medium' | 'High';
+  due_date?: string;
 };
 
 export default function TodoApp() {
-  const { user,  } = useAuth();
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
+  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
+  const [dueDate, setDueDate] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -37,7 +43,7 @@ export default function TodoApp() {
 
     const { data, error } = await supabase
       .from('tasks')
-      .insert([{ text: newTask, completed: false, user_id: user.id }])
+      .insert([{ text: newTask, completed: false, user_id: user.id, priority, due_date: dueDate }])
       .select()
       .single();
 
@@ -48,6 +54,8 @@ export default function TodoApp() {
 
     setTasks(prev => [...prev, data]);
     setNewTask('');
+    setPriority('Medium');
+    setDueDate('');
   };
 
   const updateTask = async (id: number, updates: Partial<Task>) => {
@@ -72,34 +80,60 @@ export default function TodoApp() {
   const completedTasks = tasks.filter(t => t.completed);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-6">
+    <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} min-h-screen flex flex-col items-center justify-center px-4 py-6`}>
       <div className="flex justify-between items-center w-full max-w-4xl mb-6">
         <h1 className="text-3xl font-bold">Welcome to your To-do-List</h1>
-       <button
-  className="underline text-blue-600"
-  onClick={async () => {
-    await supabase.auth.signOut();
-    // Optionally: you can force a reload or set user to null
-    // location.reload();  <-- quick hack to refresh UI
-  }}
->
-  Logout
-</button>
-
+        <div className="flex gap-4">
+          <button
+            className="underline text-blue-600"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              location.reload();
+            }}
+          >
+            Logout
+          </button>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="text-sm border px-2 py-1 rounded"
+          >
+            {darkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
+          </button>
+        </div>
       </div>
 
-      <div className="flex w-full max-w-xl mb-6">
+      <div className="flex flex-col md:flex-row w-full max-w-xl mb-6 gap-2">
         <input
           type="text"
           placeholder="Enter a task..."
           value={newTask}
           onChange={e => setNewTask(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addTask()}
-          className="flex-1 border px-3 py-2 rounded-l bg-blue-100 focus:outline-none"
+          className="flex-1 border px-3 py-2 rounded bg-blue-100 focus:outline-none"
+        />
+        <select
+          value={priority}
+onChange={(e) => {
+  const value = e.target.value;
+  if (value === 'Low' || value === 'Medium' || value === 'High') {
+    setPriority(value);
+  }
+}}
+          className="border px-2 py-2 rounded"
+        >
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <input
+          type="date"
+          value={dueDate}
+          onChange={e => setDueDate(e.target.value)}
+          className="border px-2 py-2 rounded"
         />
         <button
           onClick={addTask}
-          className="bg-sky-400 px-4 py-2 text-white font-semibold rounded-r"
+          className="bg-sky-400 px-4 py-2 text-white font-semibold rounded"
         >
           Add
         </button>
@@ -115,7 +149,9 @@ export default function TodoApp() {
               task={task}
               onComplete={() => updateTask(task.id, { completed: true })}
               onDelete={() => deleteTask(task.id)}
-              onEdit={text => updateTask(task.id, { text })}
+              onEdit={(text) => updateTask(task.id, { text })}
+              onPriorityChange={(priority) => updateTask(task.id, { priority })}
+              onDueDateChange={(date) => updateTask(task.id, { due_date: date })}
             />
           ))}
         </div>
@@ -130,7 +166,9 @@ export default function TodoApp() {
               isCompleted
               onComplete={() => updateTask(task.id, { completed: false })}
               onDelete={() => deleteTask(task.id)}
-              onEdit={text => updateTask(task.id, { text })}
+              onEdit={(text) => updateTask(task.id, { text })}
+              onPriorityChange={(priority) => updateTask(task.id, { priority })}
+              onDueDateChange={(date) => updateTask(task.id, { due_date: date })}
             />
           ))}
         </div>
