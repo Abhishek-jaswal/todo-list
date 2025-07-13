@@ -1,0 +1,140 @@
+import { useEffect, useState } from 'react';
+import TaskCard from './TaskCard';
+import { supabase } from '../supabase';
+import { useAuth } from '../context/AuthContext';
+
+type Task = {
+  id: number;
+  text: string;
+  completed: boolean;
+  user_id: string;
+};
+
+export default function TodoApp() {
+  const { user,  } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState('');
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('id', { ascending: true });
+
+      if (error) console.error('Fetch error:', error.message);
+      else setTasks(data || []);
+    };
+
+    fetchTasks();
+  }, [user]);
+
+  const addTask = async () => {
+    if (!newTask.trim() || !user) return;
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([{ text: newTask, completed: false, user_id: user.id }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Add task error:', error.message);
+      return;
+    }
+
+    setTasks(prev => [...prev, data]);
+    setNewTask('');
+  };
+
+  const updateTask = async (id: number, updates: Partial<Task>) => {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) console.error('Update task error:', error.message);
+    else setTasks(prev => prev.map(t => (t.id === id ? data : t)));
+  };
+
+  const deleteTask = async (id: number) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (error) console.error('Delete task error:', error.message);
+    else setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  const pendingTasks = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t => t.completed);
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-6">
+      <div className="flex justify-between items-center w-full max-w-4xl mb-6">
+        <h1 className="text-3xl font-bold">Welcome to your To-do-List</h1>
+       <button
+  className="underline text-blue-600"
+  onClick={async () => {
+    await supabase.auth.signOut();
+    // Optionally: you can force a reload or set user to null
+    // location.reload();  <-- quick hack to refresh UI
+  }}
+>
+  Logout
+</button>
+
+      </div>
+
+      <div className="flex w-full max-w-xl mb-6">
+        <input
+          type="text"
+          placeholder="Enter a task..."
+          value={newTask}
+          onChange={e => setNewTask(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addTask()}
+          className="flex-1 border px-3 py-2 rounded-l bg-blue-100 focus:outline-none"
+        />
+        <button
+          onClick={addTask}
+          className="bg-sky-400 px-4 py-2 text-white font-semibold rounded-r"
+        >
+          Add
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+        <div className="bg-blue-200 p-4 rounded shadow">
+          <h2 className="font-bold text-lg mb-2">Task List</h2>
+          {pendingTasks.length === 0 && <p className="text-gray-600">No pending tasks</p>}
+          {pendingTasks.map(task => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onComplete={() => updateTask(task.id, { completed: true })}
+              onDelete={() => deleteTask(task.id)}
+              onEdit={text => updateTask(task.id, { text })}
+            />
+          ))}
+        </div>
+
+        <div className="bg-blue-200 p-4 rounded shadow">
+          <h2 className="font-bold text-lg mb-2">Completed Task</h2>
+          {completedTasks.length === 0 && <p className="text-gray-600">No completed tasks</p>}
+          {completedTasks.map(task => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              isCompleted
+              onComplete={() => updateTask(task.id, { completed: false })}
+              onDelete={() => deleteTask(task.id)}
+              onEdit={text => updateTask(task.id, { text })}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
