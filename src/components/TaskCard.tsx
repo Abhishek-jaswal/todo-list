@@ -16,33 +16,33 @@ type Props = {
   onComplete: () => void;
   onDelete: () => void;
   onEdit: (text: string) => void;
-  onPriorityChange?: (priority: Task['priority']) => void;
-  onDueDateChange?: (date: string) => void;
+  onPriorityChange: (priority: 'Low' | 'Medium' | 'High') => void;
+  onDueDateChange: (dueDate: string) => void;
   isCompleted?: boolean;
 };
 
-// ✅ Utility to format "created X ago"
 function formatTimeAgo(dateString: string) {
   const date = new Date(dateString);
   const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// ✅ Priority badge styling
+function formatDueIn(dueDate?: string) {
+  if (!dueDate) return '';
+  const diffMs = new Date(dueDate).getTime() - Date.now();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return diffDays < 0 ? `Overdue` : `Due in ${diffDays}d`;
+}
+
 const getPriorityColor = (priority: Task['priority']) => {
   switch (priority) {
-    case 'High':
-      return 'bg-red-500 text-white';
-    case 'Medium':
-      return 'bg-yellow-400 text-white';
-    case 'Low':
-      return 'bg-green-500 text-white';
-    default:
-      return 'bg-gray-400 text-white';
+    case 'High': return 'bg-red-500 text-white';
+    case 'Medium': return 'bg-yellow-400 text-white';
+    case 'Low': return 'bg-green-500 text-white';
+    default: return 'bg-gray-400 text-white';
   }
 };
 
@@ -51,8 +51,8 @@ const TaskCard = ({
   onComplete,
   onDelete,
   onEdit,
-  onPriorityChange,
-  onDueDateChange,
+  // onPriorityChange,
+  // onDueDateChange,
   isCompleted = false,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -65,90 +65,66 @@ const TaskCard = ({
     }
   };
 
-  return (
-    <div className="flex items-center justify-between bg-blue-100 p-2 rounded mb-2">
-      <div className="flex items-center gap-2 flex-1">
-        <input type="checkbox" checked={task.completed} onChange={onComplete} />
+  const overdue = task.due_date && new Date(task.due_date) < new Date();
 
-        <div className="flex flex-col w-full">
+  return (
+    <div className={`flex flex-col gap-2 p-3 rounded mb-2 shadow ${overdue ? 'border-2 border-red-500' : ''} ${getPriorityColor(task.priority)}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <input type="checkbox" checked={task.completed} onChange={onComplete} />
           {isEditing ? (
             <input
               value={editText}
-              onChange={(e) => setEditText(e.target.value)}
+              onChange={e => setEditText(e.target.value)}
               onBlur={handleEdit}
-              onKeyDown={(e) => e.key === 'Enter' && handleEdit()}
-              className="bg-white border px-2 py-1 rounded"
+              onKeyDown={e => e.key === 'Enter' && handleEdit()}
+              className="bg-white text-black px-2 py-1 rounded"
               autoFocus
             />
           ) : (
-            <div className="flex items-center justify-between">
-              <span className="cursor-pointer">{task.text}</span>
-              {task.priority && (
-                <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ml-2 ${getPriorityColor(
-                    task.priority
-                  )}`}
-                >
-                  {task.priority}
-                </span>
-              )}
-            </div>
+            <span className="font-semibold">{task.text}</span>
           )}
-
-          {/* Meta info section */}
-          <div className="flex flex-wrap gap-2 mt-1 text-xs text-gray-600 items-center">
-            {task.created_at && (
-              <span>Created: {formatTimeAgo(task.created_at)}</span>
-            )}
-            {onPriorityChange && (
-              <select
-                value={task.priority || 'Medium'}
-                onChange={(e) =>
-                  onPriorityChange(e.target.value as Task['priority'])
-                }
-                className="border px-1 py-0.5 rounded text-xs bg-white"
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
-            )}
-            {onDueDateChange && (
-              <input
-                type="date"
-                value={task.due_date || ''}
-                onChange={(e) => onDueDateChange(e.target.value)}
-                className="border px-1 py-0.5 rounded text-xs"
-              />
-            )}
-          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {!isEditing && (
+            <button onClick={() => setIsEditing(true)} title="Edit">
+              <FaPen />
+            </button>
+          )}
+          <button onClick={onComplete} title={isCompleted ? 'Undo' : 'Complete'}>
+            {isCompleted ? <FaUndo /> : <FaCheck />}
+          </button>
+          <button onClick={onDelete} title="Delete">
+            <FaTrash />
+          </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 ml-4">
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="text-gray-600 hover:text-gray-800"
-            title="Edit"
+      <div className="flex flex-col sm:flex-row gap-2 justify-between text-sm">
+        <div>
+          <span className="text-xs">Created: {formatTimeAgo(task.created_at!)}</span>
+        </div>
+        <div className="flex gap-2 items-center">
+          {/* <select
+            value={task.priority || 'Medium'}
+            onChange={e => onPriorityChange(e.target.value as 'Low' | 'Medium' | 'High')}
+            className="text-black px-1 rounded"
+            title="Set priority"
           >
-            <FaPen />
-          </button>
-        )}
-        <button
-          onClick={onComplete}
-          className="text-green-600 hover:text-green-800"
-          title={isCompleted ? 'Undo' : 'Complete'}
-        >
-          {isCompleted ? <FaUndo /> : <FaCheck />}
-        </button>
-        <button
-          onClick={onDelete}
-          className="text-red-600 hover:text-red-800"
-          title="Delete"
-        >
-          <FaTrash />
-        </button>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+
+          <input
+            type="date"
+            value={task.due_date || ''}
+            onChange={e => onDueDateChange(e.target.value)}
+            className="text-black px-1 rounded"
+            title="Set due date"
+          /> */}
+          <span>{formatDueIn(task.due_date)}</span>
+        </div>
       </div>
     </div>
   );
