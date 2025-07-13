@@ -20,7 +20,6 @@ export default function TodoApp() {
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
   const [dueDate, setDueDate] = useState('');
   const [darkMode, setDarkMode] = useState(false);
-  
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -114,12 +113,12 @@ export default function TodoApp() {
         />
         <select
           value={priority}
-onChange={(e) => {
-  const value = e.target.value;
-  if (value === 'Low' || value === 'Medium' || value === 'High') {
-    setPriority(value);
-  }
-}}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === 'Low' || value === 'Medium' || value === 'High') {
+              setPriority(value);
+            }
+          }}
           className="border px-2 py-2 rounded"
         >
           <option value="Low">Low</option>
