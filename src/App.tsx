@@ -79,8 +79,9 @@ export default function App() {
           {completedTasks.length === 0 && <p className="text-gray-600">No completed tasks</p>}
           {completedTasks.map(task => (
             <TaskCard
+             task={task}
               key={task.id}
-              task={task}
+             
               onComplete={() => toggleComplete(task.id)}
               onDelete={() => deleteTask(task.id)}
               onEdit={(text) => editTask(task.id, text)}
