@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from './supabase';
 import TaskCard from './components/TaskCard';
 
-export type Task = {
+type Task = {
   id: number;
   text: string;
   completed: boolean;
@@ -11,30 +12,70 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
 
-  const addTask = () => {
+  // 🔄 Load tasks from Supabase
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching tasks:', error.message);
+      } else {
+        setTasks(data || []);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  const addTask = async () => {
     if (!newTask.trim()) return;
-    setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }]);
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([{ text: newTask, completed: false }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Add task error:', error.message);
+      return;
+    }
+
+    setTasks(prev => [...prev, data]);
     setNewTask('');
   };
 
-  const toggleComplete = (id: number) => {
-    setTasks(tasks.map(task =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+  const updateTask = async (id: number, updates: Partial<Task>) => {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Update task error:', error.message);
+      return;
+    }
+
+    setTasks(prev => prev.map(t => (t.id === id ? data : t)));
   };
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const deleteTask = async (id: number) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (error) {
+      console.error('Delete task error:', error.message);
+      return;
+    }
+
+    setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  const editTask = (id: number, text: string) => {
-    setTasks(tasks.map(task =>
-      task.id === id ? { ...task, text } : task
-    ));
-  };
-
-  const pendingTasks = tasks.filter(task => !task.completed);
-  const completedTasks = tasks.filter(task => task.completed);
+  const pendingTasks = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t => t.completed);
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
@@ -66,9 +107,9 @@ export default function App() {
             <TaskCard
               key={task.id}
               task={task}
-              onComplete={() => toggleComplete(task.id)}
+              onComplete={() => updateTask(task.id, { completed: true })}
               onDelete={() => deleteTask(task.id)}
-              onEdit={(text) => editTask(task.id, text)}
+              onEdit={(text) => updateTask(task.id, { text })}
             />
           ))}
         </div>
@@ -79,13 +120,12 @@ export default function App() {
           {completedTasks.length === 0 && <p className="text-gray-600">No completed tasks</p>}
           {completedTasks.map(task => (
             <TaskCard
-             task={task}
               key={task.id}
-             
-              onComplete={() => toggleComplete(task.id)}
-              onDelete={() => deleteTask(task.id)}
-              onEdit={(text) => editTask(task.id, text)}
+              task={task}
               isCompleted
+              onComplete={() => updateTask(task.id, { completed: false })}
+              onDelete={() => deleteTask(task.id)}
+              onEdit={(text) => updateTask(task.id, { text })}
             />
           ))}
         </div>
