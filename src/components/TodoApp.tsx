@@ -87,11 +87,7 @@ const confirmDeleteTask = async () => {
     else setTasks(prev => prev.map(t => (t.id === id ? data : t)));
   };
 
-  const deleteTask = async (id: number) => {
-    const { error } = await supabase.from('tasks').delete().eq('id', id);
-    if (error) console.error('Delete task error:', error.message);
-    else setTasks(prev => prev.filter(t => t.id !== id));
-  };
+ 
 
   const isDueToday = (dueDate?: string) => {
     if (!dueDate) return false;
