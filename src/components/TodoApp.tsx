@@ -4,6 +4,8 @@ import TaskCard from './TaskCard';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { FaSun, FaMoon, FaSignOutAlt, FaPlus, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
+
 
 export type Task = {
   id: number;
@@ -92,20 +94,23 @@ export default function TodoApp() {
   };
 
   return (
-    <div className={`${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-950 text-white' : 'bg-gradient-to-br from-indigo-100 to-white text-black'} min-h-screen transition duration-300`}>      
+    <div className={`${darkMode ?  'bg-gray-300 to-white text-black': 'bg-gradient-to-br from-gray-900 to-gray-950 text-white'} min-h-screen transition duration-300`}>      
       <header className="bg-indigo-600 dark:bg-gray-900 shadow py-4 px-6 flex justify-between items-center sticky top-0 z-10">
-        <h1 className="text-3xl font-bold text-white">📝 To-do List</h1>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-2">📝 To-do List</h1>
         <div className="flex items-center gap-3">
           <button onClick={() => setDarkMode(!darkMode)} className="text-xl px-2 py-1 rounded text-white">
-            {darkMode ? '🌞' : '🌙'}
+            {darkMode ? <FaSun /> : <FaMoon />}
           </button>
-          <button onClick={async () => { await supabase.auth.signOut(); location.reload(); }} className="text-white underline">Logout</button>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); location.reload(); }}
+            className="text-white underline flex items-center gap-1">
+            <FaSignOutAlt /> Logout
+          </button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          {/* Task Input */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8 grid grid-cols-1 md:grid-cols-5 gap-4">
             <input
               type="text"
@@ -113,9 +118,9 @@ export default function TodoApp() {
               onChange={e => setNewTask(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addTask()}
               placeholder="Add a new task..."
-              className="md:col-span-2 px-4 py-2 rounded border focus:outline-none"
+              className="md:col-span-2 px-4 py-2 bg-gray-700 rounded border focus:outline-none"
             />
-            <select value={priority} onChange={e => setPriority(e.target.value as any)} className="px-4 py-2 rounded border">
+            <select value={priority} onChange={e => setPriority(e.target.value as any)} className="px-4 py-2 rounded border bg-white dark:bg-gray-700">
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
@@ -124,16 +129,17 @@ export default function TodoApp() {
               type="date"
               value={dueDate}
               onChange={e => setDueDate(e.target.value)}
-              className="px-4 py-2 rounded border"
+              className="px-4 py-2 rounded border bg-white dark:bg-gray-700"
             />
-            <button onClick={addTask} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded shadow transition-all duration-300">Add</button>
+            <button onClick={addTask} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2  rounded shadow flex items-center gap-2 transition-all duration-300">
+              <FaPlus /> Add
+            </button>
           </div>
         </motion.div>
 
-        {/* Animated Filters and Progress */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="border px-3 py-2 rounded">
+            <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="border px-3 py-2 rounded bg-white dark:bg-gray-700">
               <option value="All">All Priorities</option>
               <option value="High">High</option>
               <option value="Medium">Medium</option>
@@ -143,28 +149,27 @@ export default function TodoApp() {
               <input type="checkbox" checked={filterDueToday} onChange={e => setFilterDueToday(e.target.checked)} />
               Due Today
             </label>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="border px-3 py-2 rounded">
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="border px-3 py-2 rounded bg-white dark:bg-gray-700">
               <option value="created_at">Created</option>
               <option value="due_date">Due Date</option>
             </select>
-            <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} className="border px-3 py-2 rounded">
-              {sortOrder === 'asc' ? '⬆️ Asc' : '⬇️ Desc'}
+            <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} className="border px-3 py-2 rounded flex items-center gap-2 bg-white dark:bg-gray-700">
+              {sortOrder === 'asc' ? <><FaSortAmountDown /> Asc</> : <><FaSortAmountUp /> Desc</>}
             </button>
           </div>
 
-          {/* Progress Bar */}
           <div className="mb-8">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div className="bg-white dark:bg-gray-700 p-4 rounded shadow">
-                <p className="text-sm text-gray-600 dark:text-gray-300">Total Tasks</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-bold">Total Tasks</p>
                 <h3 className="text-2xl font-bold">{tasks.length}</h3>
               </div>
               <div className="bg-white dark:bg-gray-700 p-4 rounded shadow">
-                <p className="text-sm text-blue-500">Pending</p>
+                <p className="text-sm text-blue-500 font-bold">Pending</p>
                 <h3 className="text-2xl font-bold">{filterAndSort(false).length}</h3>
               </div>
               <div className="bg-white dark:bg-gray-700 p-4 rounded shadow">
-                <p className="text-sm text-green-500">Completed</p>
+                <p className="text-sm text-green-700 font-bold">Completed</p>
                 <h3 className="text-2xl font-bold">{filterAndSort(true).length}</h3>
               </div>
             </div>
