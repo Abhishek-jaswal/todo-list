@@ -39,10 +39,10 @@ function formatDueIn(dueDate?: string) {
 
 const getPriorityColor = (priority: Task['priority']) => {
   switch (priority) {
-    case 'High': return 'bg-red-500 text-white';
-    case 'Medium': return 'bg-yellow-400 text-white';
-    case 'Low': return 'bg-green-500 text-white';
-    default: return 'bg-gray-400 text-white';
+    case 'High': return 'bg-gray-700 text-gray-200';
+    case 'Medium': return 'bg-gray-600 text-gray-200';
+    case 'Low': return 'bg-gray-500 text-gray-200';
+    default: return 'bg-gray-400 text-gray-200';
   }
 };
 
@@ -68,7 +68,7 @@ const TaskCard = ({
   const overdue = task.due_date && new Date(task.due_date) < new Date();
 
   return (
-    <div className={`flex flex-col gap-2 p-3 rounded mb-2 shadow ${overdue ? 'border-2 border-red-500' : ''} ${getPriorityColor(task.priority)}`}>
+    <div className={`flex flex-col gap-2 p-3 rounded mb-2 shadow ${overdue ? 'border-2 bg-red-500' : ''} ${getPriorityColor(task.priority)}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <input type="checkbox" checked={task.completed} onChange={onComplete} />
@@ -114,9 +114,9 @@ const TaskCard = ({
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
             <option value="High">High</option>
-          </select>
+          </select> */}
 
-          <input
+          {/* <input
             type="date"
             value={task.due_date || ''}
             onChange={e => onDueDateChange(e.target.value)}

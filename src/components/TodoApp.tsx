@@ -1,8 +1,11 @@
-// Redesigned TodoApp.tsx with full polished UI and UX
+// Polished, full-page UI for TodoApp with animations and vibrant theme
 import { useEffect, useState } from 'react';
 import TaskCard from './TaskCard';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+import { FaSun, FaMoon, FaSignOutAlt, FaPlus, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
+
 
 export type Task = {
   id: number;
@@ -91,68 +94,106 @@ export default function TodoApp() {
   };
 
   return (
-    <div className={`${darkMode ? 'bg-gray-950 text-white' : 'bg-white text-black'} min-h-screen transition duration-300 px-4 py-6`}>      
-      {/* Header */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-bold">📝 To-do List</h1>
-          <div className="flex items-center gap-2">
-            <button className="text-blue-500 underline" onClick={async () => { await supabase.auth.signOut(); location.reload(); }}>Logout</button>
-            <button onClick={() => setDarkMode(!darkMode)} className="text-xl px-2 py-1 rounded transition">
-              {darkMode ? '🌞' : '🌙'}
-            </button>
-          </div>
-        </div>
-
-        {/* Task Input */}
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow flex flex-col md:flex-row gap-2 mb-6">
-          <input
-            type="text"
-            value={newTask}
-            onChange={e => setNewTask(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTask()}
-            placeholder="What do you need to do?"
-            className="flex-1 px-4 py-2 rounded border focus:outline-none"
-          />
-          <select value={priority} onChange={e => setPriority(e.target.value as any)} className="px-2 py-2 rounded border">
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
-            className="px-2 py-2 rounded border"
-          />
-          <button onClick={addTask} className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded shadow">Add</button>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="border px-2 py-1 rounded">
-            <option value="All">All</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={filterDueToday} onChange={e => setFilterDueToday(e.target.checked)} />
-            Due Today
-          </label>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="border px-2 py-1 rounded">
-            <option value="created_at">Created</option>
-            <option value="due_date">Due Date</option>
-          </select>
-          <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} className="border px-2 py-1 rounded">
-            {sortOrder === 'asc' ? '⬆️ Asc' : '⬇️ Desc'}
+    <div className={`${darkMode ?  'bg-gray-300 to-white text-black': 'bg-gradient-to-br from-gray-900 to-gray-950 text-white'} min-h-screen transition duration-300`}>      
+      <header className="bg-indigo-600 dark:bg-gray-900 shadow py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+        <h1 className="text-3xl font-bold text-white flex items-center gap-2">📝 To-do List</h1>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setDarkMode(!darkMode)} className="text-xl px-2 py-1 rounded text-white">
+            {darkMode ? <FaSun /> : <FaMoon />}
+          </button>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); location.reload(); }}
+            className="text-white underline flex items-center gap-1">
+            <FaSignOutAlt /> Logout
           </button>
         </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto p-6">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8 grid grid-cols-1 md:grid-cols-5 gap-4">
+            <input
+              type="text"
+              value={newTask}
+              onChange={e => setNewTask(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addTask()}
+              placeholder="Add a new task..."
+              className="md:col-span-2 px-4 py-2 bg-gray-700 rounded border focus:outline-none"
+            />
+            <select value={priority} onChange={e => setPriority(e.target.value as any)} className="px-4 py-2 rounded border bg-white dark:bg-gray-700">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={e => setDueDate(e.target.value)}
+              className="px-4 py-2 rounded border bg-white dark:bg-gray-700"
+            />
+            <button onClick={addTask} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2  rounded shadow flex items-center gap-2 transition-all duration-300">
+              <FaPlus /> Add
+            </button>
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="border px-3 py-2 rounded bg-white dark:bg-gray-700">
+              <option value="All">All Priorities</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={filterDueToday} onChange={e => setFilterDueToday(e.target.checked)} />
+              Due Today
+            </label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="border px-3 py-2 rounded bg-white dark:bg-gray-700">
+              <option value="created_at">Created</option>
+              <option value="due_date">Due Date</option>
+            </select>
+            <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} className="border px-3 py-2 rounded flex items-center gap-2 bg-white dark:bg-gray-700">
+              {sortOrder === 'asc' ? <><FaSortAmountDown /> Asc</> : <><FaSortAmountUp /> Desc</>}
+            </button>
+          </div>
+
+          <div className="mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+              <div className="bg-white dark:bg-gray-700 p-4 rounded shadow">
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-bold">Total Tasks</p>
+                <h3 className="text-2xl font-bold">{tasks.length}</h3>
+              </div>
+              <div className="bg-white dark:bg-gray-700 p-4 rounded shadow">
+                <p className="text-sm text-blue-500 font-bold">Pending</p>
+                <h3 className="text-2xl font-bold">{filterAndSort(false).length}</h3>
+              </div>
+              <div className="bg-white dark:bg-gray-700 p-4 rounded shadow">
+                <p className="text-sm text-green-700 font-bold">Completed</p>
+                <h3 className="text-2xl font-bold">{filterAndSort(true).length}</h3>
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                <span>Progress</span>
+                <span>{tasks.length > 0 ? `${Math.round((filterAndSort(true).length / tasks.length) * 100)}%` : '0%'}</span>
+              </div>
+              <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3">
+                <motion.div
+                  className="bg-green-500 h-3 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: tasks.length > 0 ? `${(filterAndSort(true).length / tasks.length) * 100}%` : '0%' }}
+                  transition={{ duration: 0.6 }}
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Task Lists */}
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg shadow">
-            <h2 className="text-lg font-bold mb-2">🕒 Pending</h2>
+          <motion.section initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">🕒 Pending</h2>
             {filterAndSort(false).map(task => (
               <TaskCard
                 key={task.id}
@@ -164,54 +205,11 @@ export default function TodoApp() {
                 onDueDateChange={(date) => updateTask(task.id, { due_date: date })}
               />
             ))}
-            {filterAndSort(false).length === 0 && <p className="text-gray-600">No pending tasks</p>}
-          </div>
-{/* Progress Container */}
-{/* Progress Overview */}
-<div className="mb-6">
-  {/* Stats */}
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 text-center">
-    <div className="bg-gray-200 dark:bg-gray-700 p-4 rounded shadow">
-      <p className="text-sm text-gray-600 dark:text-gray-300">Total Tasks</p>
-      <h3 className="text-2xl font-bold">{tasks.length}</h3>
-    </div>
-    <div className="bg-blue-200 dark:bg-blue-800 p-4 rounded shadow">
-      <p className="text-sm text-blue-900 dark:text-blue-200">Pending</p>
-      <h3 className="text-2xl font-bold">{filterAndSort(false).length}</h3>
-    </div>
-    <div className="bg-green-200 dark:bg-green-800 p-4 rounded shadow">
-      <p className="text-sm text-green-900 dark:text-green-200">Completed</p>
-      <h3 className="text-2xl font-bold">{filterAndSort(true).length}</h3>
-    </div>
-  </div>
+            {filterAndSort(false).length === 0 && <p className="text-gray-500">No pending tasks</p>}
+          </motion.section>
 
-  {/* Progress Bar */}
-  <div>
-    <div className="flex justify-between mb-1 text-sm text-gray-600 dark:text-gray-300">
-      <span>Progress</span>
-      <span>
-        {tasks.length > 0
-          ? `${Math.round((filterAndSort(true).length / tasks.length) * 100)}%`
-          : '0%'}
-      </span>
-    </div>
-    <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3">
-      <div
-        className="bg-green-500 h-3 rounded-full transition-all duration-300"
-        style={{
-          width:
-            tasks.length > 0
-              ? `${(filterAndSort(true).length / tasks.length) * 100}%`
-              : '0%',
-        }}
-      />
-    </div>
-  </div>
-</div>
-
-
-          <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg shadow">
-            <h2 className="text-lg font-bold mb-2">✅ Completed</h2>
+          <motion.section initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">✅ Completed</h2>
             {filterAndSort(true).map(task => (
               <TaskCard
                 key={task.id}
@@ -224,22 +222,22 @@ export default function TodoApp() {
                 onDueDateChange={(date) => updateTask(task.id, { due_date: date })}
               />
             ))}
-            {filterAndSort(true).length === 0 && <p className="text-gray-600">No completed tasks</p>}
-          </div>
+            {filterAndSort(true).length === 0 && <p className="text-gray-500">No completed tasks</p>}
+          </motion.section>
         </div>
-      </div>
+      </main>
 
-      {/* Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       {taskToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl w-80">
-            <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete this task?</h3>
-            <p className="mb-4">"{taskToDelete.text}"</p>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-xl w-96">
+            <h3 className="text-lg font-semibold mb-4">Oops! Want to remove this task?</h3>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">"{taskToDelete.text}"</p>
             <div className="flex justify-end gap-4">
               <button onClick={() => setTaskToDelete(null)} className="px-4 py-2 rounded border">Cancel</button>
               <button onClick={confirmDeleteTask} className="bg-red-600 text-white px-4 py-2 rounded">Delete</button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
