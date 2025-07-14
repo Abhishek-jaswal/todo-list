@@ -167,20 +167,48 @@ export default function TodoApp() {
             {filterAndSort(false).length === 0 && <p className="text-gray-600">No pending tasks</p>}
           </div>
 {/* Progress Container */}
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 text-center">
-  <div className="bg-gray-200 dark:bg-gray-700 p-4 rounded shadow">
-    <p className="text-sm text-gray-600 dark:text-gray-300">Total Tasks</p>
-    <h3 className="text-2xl font-bold">{tasks.length}</h3>
+{/* Progress Overview */}
+<div className="mb-6">
+  {/* Stats */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 text-center">
+    <div className="bg-gray-200 dark:bg-gray-700 p-4 rounded shadow">
+      <p className="text-sm text-gray-600 dark:text-gray-300">Total Tasks</p>
+      <h3 className="text-2xl font-bold">{tasks.length}</h3>
+    </div>
+    <div className="bg-blue-200 dark:bg-blue-800 p-4 rounded shadow">
+      <p className="text-sm text-blue-900 dark:text-blue-200">Pending</p>
+      <h3 className="text-2xl font-bold">{filterAndSort(false).length}</h3>
+    </div>
+    <div className="bg-green-200 dark:bg-green-800 p-4 rounded shadow">
+      <p className="text-sm text-green-900 dark:text-green-200">Completed</p>
+      <h3 className="text-2xl font-bold">{filterAndSort(true).length}</h3>
+    </div>
   </div>
-  <div className="bg-blue-200 dark:bg-blue-800 p-4 rounded shadow">
-    <p className="text-sm text-blue-900 dark:text-blue-200">Pending</p>
-    <h3 className="text-2xl font-bold">{filterAndSort(false).length}</h3>
-  </div>
-  <div className="bg-green-200 dark:bg-green-800 p-4 rounded shadow">
-    <p className="text-sm text-green-900 dark:text-green-200">Completed</p>
-    <h3 className="text-2xl font-bold">{filterAndSort(true).length}</h3>
+
+  {/* Progress Bar */}
+  <div>
+    <div className="flex justify-between mb-1 text-sm text-gray-600 dark:text-gray-300">
+      <span>Progress</span>
+      <span>
+        {tasks.length > 0
+          ? `${Math.round((filterAndSort(true).length / tasks.length) * 100)}%`
+          : '0%'}
+      </span>
+    </div>
+    <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3">
+      <div
+        className="bg-green-500 h-3 rounded-full transition-all duration-300"
+        style={{
+          width:
+            tasks.length > 0
+              ? `${(filterAndSort(true).length / tasks.length) * 100}%`
+              : '0%',
+        }}
+      />
+    </div>
   </div>
 </div>
+
 
           <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg shadow">
             <h2 className="text-lg font-bold mb-2">✅ Completed</h2>
