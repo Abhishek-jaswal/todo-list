@@ -1,42 +1,29 @@
-// context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../supabase';
+import { pb } from '../lib/pocketbase';
 
-type AuthContextType = {
-  user: any;
-  loading: boolean;
-};
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-});
+const AuthContext = createContext<any>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(pb.authStore.model);
 
   useEffect(() => {
-    // ✅ Get current session on mount
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      setLoading(false);
+    pb.authStore.onChange(() => {
+      setUser(pb.authStore.model);
     });
-
-    // ✅ Listen for login/signup/logout
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
+  const loginWithGoogle = async () => {
+    await pb.collection('users').authWithOAuth2({ provider: 'google' });
+  };
+
+  const loginWithGithub = async () => {
+    await pb.collection('users').authWithOAuth2({ provider: 'github' });
+  };
+
+  const logout = () => pb.authStore.clear();
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loginWithGoogle, loginWithGithub, logout }}>
       {children}
     </AuthContext.Provider>
   );
