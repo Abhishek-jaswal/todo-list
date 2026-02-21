@@ -1,103 +1,171 @@
-# 📝 Supabase To-Do App
+# TaskFlow ✅
 
-A modern full-stack To-Do List built with **React**, **TypeScript**, and **Supabase**. It includes priority tagging, due date reminders, dark mode, advanced filters, and mobile-friendly UX.
+A modern, full-stack todo application built with React, TypeScript, and PocketBase — featuring real-time data sync, user authentication, dark/light mode, and a clean responsive UI.
 
----
-
-## 🚀 Features
-
-- ✅ User authentication with Supabase Auth
-- 🏷️ Task priority (High / Medium / Low)
-- 🗓️ Due date support
-- 🌑 Dark mode toggle (with persistence)
-- 📊 Filters:
-  - Filter by Priority
-  - Filter due today
-- 🧮 Sorting:
-  - Sort by `created_at` or `due_date`
-  - Ascending or Descending
-- 📱 Mobile responsive UI
-- 🧹 Task management:
-  - Mark as complete/incomplete
-  - Edit text, due date, priority
-  - Delete task (with confirmation)
-- 🔔 Ready for Due Date Notifications (via Supabase Edge Functions)
+**Live Demo → [abhishek-todolist.vercel.app](https://abhishek-todolist.vercel.app)**
 
 ---
 
-## 📦 Tech Stack
+## Screenshots
 
-| Tech        | Purpose                |
-|-------------|------------------------|
-| React + TS  | Frontend UI & logic    |
-| Supabase    | Auth, Database, Edge   |
-| TailwindCSS | Styling                |
+> Dark Mode &nbsp;|&nbsp; Light Mode
+
+*(Add screenshots here)*
 
 ---
 
-## 📂 Project Structure
+## Features
 
-src/
-├── components/
-│ ├── TodoApp.tsx // Main app logic
-│ └── TaskCard.tsx // Task UI card
-├── context/
-│ └── AuthContext.tsx // Auth provider
-├── supabase.ts // Supabase client setup
+- 🔐 **User Authentication** — Secure sign up / login via PocketBase Auth (supports OAuth2)
+- 🌙 **Dark & Light Mode** — System-aware with manual toggle, preference saved to localStorage
+- ✅ **Full CRUD** — Create, edit, complete, and delete tasks
+- 🎯 **Priority Levels** — High / Medium / Low with color-coded indicators
+- 📅 **Due Dates** — Overdue detection with visual warnings
+- 🔍 **Filter & Sort** — Filter by priority, due today; sort by created date or due date
+- 💫 **Smooth Animations** — Powered by Framer Motion for fluid transitions
+- 📱 **Responsive Design** — Works seamlessly on mobile and desktop
+- ☁️ **Cloud Storage** — All tasks synced to PocketBase (PostgreSQL-backed)
 
 ---
 
-## 🛠️ Setup Instructions
+## Tech Stack
 
-### 1. Clone the repository
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + TypeScript |
+| Styling | Inline styles with CSS-in-JS tokens |
+| Animations | Framer Motion |
+| Backend | PocketBase (self-hosted on AWS EC2) |
+| Database | PocketBase (SQLite) |
+| Hosting | Vercel (frontend) · AWS EC2 (backend) |
+| Auth | PocketBase Auth + OAuth2 |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A running PocketBase instance
+
+### Installation
 
 ```bash
-git clone https://github.com/yourusername/todo-app.git
-cd todo-app
-```
+# Clone the repository
+git clone https://github.com/your-username/taskflow.git
+cd taskflow
 
-## Install dependencies
-
-```bash
+# Install dependencies
 npm install
-1. Configure Supabase
-Create a .env.local file with:
 
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
-Make sure your Supabase project includes a tasks table:
-
-create table tasks (
-  id bigint generated always as identity primary key,
-  text text,
-  completed boolean default false,
-  user_id uuid,
-  created_at timestamp default now(),
-  priority text,
-  due_date date,
-  reminder_sent boolean default false
-);
+# Create environment file
+cp .env.example .env
 ```
 
-## Run the app
+### Environment Variables
+
+Create a `.env` file in the root:
+
+```env
+VITE_POCKETBASE_URL=https://your-pocketbase-url.com
+```
+
+### Run Locally
 
 ```bash
 npm run dev
 ```
 
-## 📸 Screenshots
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-## Light Mode Dark Mode
+---
 
-## 📱 Mobile UI
+## PocketBase Setup
 
-- Fully responsive layout
+### 1. Create the `tasks` collection
 
-- Optimized spacing and stacking on small screens
+In your PocketBase Admin (`/_/`), create a collection called `tasks` with these fields:
 
-## 👨‍💻 Author
+| Field | Type | Required |
+|-------|------|----------|
+| `text` | Text | ✅ |
+| `completed` | Bool | ✅ |
+| `priority` | Select (`Low`, `Medium`, `High`) | |
+| `due_date` | Text | |
+| `user` | Relation → users | ✅ |
 
-## Abhishek Jaswal
+### 2. Set collection rules
 
-- 📧 <abhishekjaswal1122@gmail.com>
-- 🔗 Portfolio
+Under **API Rules**, set all rules to only allow authenticated users to access their own records:
+
+```
+@request.auth.id != "" && user = @request.auth.id
+```
+
+### 3. Add your frontend domain to allowed origins
+
+Go to **Settings → Application** and add:
+```
+https://your-vercel-app.vercel.app
+```
+
+---
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── TodoApp.tsx       # Main app shell, state management
+│   └── TaskCard.tsx      # Individual task card component
+├── context/
+│   └── AuthContext.tsx   # Auth state & logout logic
+├── lib/
+│   └── pocketbase.ts     # PocketBase client instance
+└── main.tsx
+```
+
+---
+
+## Deployment
+
+### Frontend (Vercel)
+
+```bash
+npm run build
+# Push to GitHub → import repo on vercel.com → auto-deploys on every push
+```
+
+### Backend (AWS EC2 + PocketBase)
+
+PocketBase is self-hosted on an AWS EC2 instance and managed as a systemd service for reliability:
+
+```bash
+# SSH into your EC2 instance and set up PocketBase as a service
+sudo nano /etc/systemd/system/pocketbase.service
+sudo systemctl enable pocketbase
+sudo systemctl start pocketbase
+```
+
+---
+
+## Roadmap
+
+- [ ] Drag and drop task reordering
+- [ ] Task categories / labels
+- [ ] Email reminders for due tasks
+- [ ] Subtasks / checklists
+- [ ] Collaborative task sharing
+
+---
+
+## Author
+
+**Abhishek** — [@yourgithub](https://github.com/Abhishek-jaswal)
+
+---
+
+## License
+
+MIT © Abhishek
