@@ -274,20 +274,15 @@ export default function TodoApp() {
             </button>
 
             {/* User avatar */}
-            {user?.avatar && (
+            {user?.profile && (
               <img
-                src={user.avatar}
+                src={user.profile}
                 alt=""
                 style={{ width: 30, height: 30, borderRadius: '50%', border: `2px solid ${t.border}` }}
               />
             )}
 
-            {/* User email */}
-            {user?.email && (
-              <span style={{ fontSize: '0.78rem', color: t.textMuted, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user.email}
-              </span>
-            )}
+
 
             {/* Logout */}
             <button
