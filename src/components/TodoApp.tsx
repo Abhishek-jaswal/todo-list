@@ -507,7 +507,6 @@ export default function TodoApp() {
               padding: '7px 11px', borderRadius: 10,
               border: `1px solid ${filterDueToday ? t.borderFocus : t.border}`,
               background: filterDueToday ? (isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)') : t.inputBg,
-              color: filterDueToday ? '#818cf8' : t.textMuted,
               transition: 'all 0.2s',
               userSelect: 'none',
             }}>
